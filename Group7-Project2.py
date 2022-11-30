@@ -146,19 +146,26 @@ print(df_ohe.columns.values)
 print(len(df_ohe) - df_ohe.count())
 
 # Normalization/Standardization of the values with greater range to have same range
-from sklearn import preprocessing
+# from sklearn import preprocessing
 # Get column names first
-names = df_ohe.columns
+names = df_ohe.columns.difference(['Status'])
 # Create the Scaler object
-scaler = preprocessing.StandardScaler()
-# Fit your data on the scaler object
-scaled_df = scaler.fit_transform(df_ohe)
-scaled_df = pd.DataFrame(scaled_df, columns=names)
-print(scaled_df.head())
-print(scaled_df.dtypes)
+# scaler = preprocessing.StandardScaler()
+# # Fit your data on the scaler object
+# scaled_df = scaler.fit_transform(df_ohe)
+# scaled_df = pd.DataFrame(scaled_df, columns=names)
+# print(scaled_df.head())
+# print(scaled_df.dtypes)
+# # scaled_df['Status'] = df_ohe['Status']
+
+from sklearn.preprocessing import StandardScaler
+cols_to_norm = names
+scaled_df = df_ohe
+scaled_df[cols_to_norm] = StandardScaler().fit_transform(df_ohe[cols_to_norm])
+
 
 ###################
-#### BALANCE the IMBALANCED data here or after splitting the data????????????????????
+#### BALANCE the IMBALANCED data here or after splitting the data?????????????????????????????????????????????
 ###############
 
 # Split the data into train test
@@ -173,7 +180,8 @@ trainX,testX,trainY,testY = train_test_split(x,y, test_size = 0.2)
 ########### 3. Predictive model building ###########
 ####################################################
 
-# building logistic regression model
+########### LOGISTIC REGRESSION MODEL ###########
+# Building logistic regression model
 from sklearn.linear_model import LogisticRegression
 lr = LogisticRegression(solver='lbfgs')
 lr.fit(x, y)
@@ -187,7 +195,7 @@ print ('The score of the 10 fold run is: ',score)
 
 testY_predict = lr.predict(testX)
 testY_predict.dtype
-#print(testY_predict)
+print(testY_predict)
 #Import scikit-learn metrics module for accuracy calculation
 from sklearn import metrics
 labels = y.unique()
@@ -195,7 +203,45 @@ print(labels)
 print("Accuracy:",metrics.accuracy_score(testY, testY_predict))
 #Let us print the confusion matrix
 from sklearn.metrics import confusion_matrix
-print("Confusion matrix \n" , confusion_matrix(testY, testY_predict, labels=[0,9]))
+print("Confusion matrix \n" , confusion_matrix(testY, testY_predict, labels=labels))
+
+########### DECISION TREE MODEL ###########
+# Build the decision tree using the training dataset. Use entropy as a method for splitting, 
+# and split only when reaching 20 matches.
+
+from sklearn.tree import DecisionTreeClassifier
+dt_data = DecisionTreeClassifier(criterion='entropy',min_samples_split=20, random_state=99)
+dt_data.fit(trainX, trainY)
+
+#Test the model using the testing dataset and calculate a confusion matrix this time using pandas
+predictions = dt_data.predict(testX)
+pd.crosstab(testY,predictions,rownames=['Actual'],colnames=['Predictions'])
+
+# 10 fold cross validation using sklearn 
+from sklearn.model_selection import KFold
+crossvalidation = KFold(n_splits=10, shuffle=True, random_state=1)
+from sklearn.model_selection import cross_val_score
+score = np.mean(cross_val_score(dt_data, trainX, trainY, scoring='accuracy', cv=crossvalidation, n_jobs=1))
+print('Score: ', score)
+print("Accuracy:",metrics.accuracy_score(testY, predictions))
+
+#Use Seaborn heatmaps to print the confusion matrix in a more clear and fancy way
+import seaborn as sns
+import matplotlib.pyplot as plt
+cm = confusion_matrix(testY, predictions)
+ax= plt.subplot()
+sns.heatmap(cm, annot=True, ax = ax); #annot=True to annotate cells
+# labels, title and ticks
+ax.set_xlabel('Predicted labels');ax.set_ylabel('True labels');
+ax.set_title('Confusion Matrix');
+ax.xaxis.set_ticklabels([0, 1]); ax.yaxis.set_ticklabels([0, 1]);
+plt.show()
+
+
+
+
+
+
 
 
 
