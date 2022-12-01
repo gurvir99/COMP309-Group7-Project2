@@ -47,6 +47,17 @@ print(df_mean)
 print(df_median)
 print(df_mode)
 
+
+# Store categorical values (column names) in an array
+categorical_values = []
+for col, col_type in data_bicycle_thefts.dtypes.iteritems():
+    if col_type == 'O':
+        categorical_values.append(col)
+print(categorical_values)
+
+from sklearn import preprocessing
+le = preprocessing.LabelEncoder()
+
 #Generate dataframe with correlation coefficients between columns
 df_correlation = data_bicycle_thefts.corr()
 print(df_correlation)
@@ -168,13 +179,53 @@ scaled_df[cols_to_norm] = StandardScaler().fit_transform(df_ohe[cols_to_norm])
 #### BALANCE the IMBALANCED data here or after splitting the data?????????????????????????????????????????????
 ###############
 
+
+
+
 # Split the data into train test
 x = scaled_df[scaled_df.columns.difference(['Status'])]
 y = scaled_df['Status']
 y = y.astype(int)
+y.value_counts()
+
+# Show pie plot (Approach 1)
+y.value_counts().plot.pie(autopct='%.2f')
+
+
+# Undersampling (only for testing, but will go with oversampling as that 
+# will have better accuracy as more records will be used to test)
+from imblearn.under_sampling import RandomUnderSampler
+
+rus = RandomUnderSampler(sampling_strategy=1) # Numerical value
+# rus = RandomUnderSampler(sampling_strategy="not minority") # String
+x_res, y_res = rus.fit_resample(x, y)
+
+ax = y_res.value_counts().plot.pie(autopct='%.2f')
+_ = ax.set_title("Under-sampling")
+
+# Class distribution
+y_res.value_counts()
+
+
+# OVERSAMPLING
+#Random Oversampling-  "not majority" = resample all classes but the majority class
+from imblearn.over_sampling import RandomOverSampler
+
+#ros = RandomOverSampler(sampling_strategy=1) # Float
+ros = RandomOverSampler(sampling_strategy="not majority") # String
+x_ros, y_ros = ros.fit_resample(x, y)
+
+ax = y_ros.value_counts().plot.pie(autopct='%.2f')
+_ = ax.set_title("Over-sampling")
+
+# Class distribution
+y_ros.value_counts()
+
+
+
 
 from sklearn.model_selection import train_test_split
-trainX,testX,trainY,testY = train_test_split(x,y, test_size = 0.2)
+trainX,testX,trainY,testY = train_test_split(x_ros,y_ros, test_size = 0.2)
 
 ####################################################
 ########### 3. Predictive model building ###########
@@ -184,7 +235,7 @@ trainX,testX,trainY,testY = train_test_split(x,y, test_size = 0.2)
 # Building logistic regression model
 from sklearn.linear_model import LogisticRegression
 lr = LogisticRegression(solver='lbfgs')
-lr.fit(x, y)
+lr.fit(x_ros, y_ros)
 
 # Performing 10 fold cross validation to score the model (test accuracy)
 from sklearn.model_selection import KFold
