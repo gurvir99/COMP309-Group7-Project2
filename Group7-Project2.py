@@ -47,24 +47,6 @@ print(df_mean)
 print(df_median)
 print(df_mode)
 
-
-# Store categorical values (column names) in an array
-categorical_values = []
-for col, col_type in data_bicycle_thefts.dtypes.iteritems():
-    if col_type == 'O':
-        categorical_values.append(col)
-print(categorical_values)
-
-from sklearn import preprocessing
-le = preprocessing.LabelEncoder()
-
-#Generate dataframe with correlation coefficients between columns
-df_correlation = data_bicycle_thefts.corr()
-print(df_correlation)
-
-#Visualize correlation coefficients using the Seaborn library
-sb.heatmap(df_correlation);
-
 #Get info about each column in the dataframe
 data_bicycle_thefts.info()
 
@@ -84,6 +66,9 @@ total_missing_values = data_bicycle_thefts.isna().sum().sum()
 print("Total Number of missing values: ", total_missing_values)
 
 
+"""
+2. Data Modelling
+"""
 #######################################
 ######### 2. Data Modelling ###########
 #######################################
@@ -121,13 +106,18 @@ data_bicycle_thefts.drop('X', axis='columns', inplace=True)
 data_bicycle_thefts.drop('Y', axis='columns', inplace=True)
 data_bicycle_thefts.drop('OBJECTID', axis='columns', inplace=True)
 data_bicycle_thefts.drop('event_unique_id', axis='columns', inplace=True)
-data_bicycle_thefts.drop('Report_Date', axis='columns', inplace=True)
 data_bicycle_thefts.drop('Report_Month', axis='columns', inplace=True)
 data_bicycle_thefts.drop('Report_DayOfWeek', axis='columns', inplace=True)
 data_bicycle_thefts.drop('Report_DayOfMonth', axis='columns', inplace=True)
 data_bicycle_thefts.drop('Report_DayOfYear', axis='columns', inplace=True)
 data_bicycle_thefts.drop('Report_Hour', axis='columns', inplace=True)
 data_bicycle_thefts.drop('Report_Year', axis='columns', inplace=True)
+data_bicycle_thefts.drop('Occurrence_Month', axis='columns', inplace=True)
+data_bicycle_thefts.drop('Occurrence_DayOfWeek', axis='columns', inplace=True)
+data_bicycle_thefts.drop('Occurrence_DayOfMonth', axis='columns', inplace=True)
+data_bicycle_thefts.drop('Occurrence_DayOfYear', axis='columns', inplace=True)
+data_bicycle_thefts.drop('Occurrence_Hour', axis='columns', inplace=True)
+data_bicycle_thefts.drop('Occurrence_Year', axis='columns', inplace=True)
 data_bicycle_thefts.drop('City', axis='columns', inplace=True)
 data_bicycle_thefts.drop('Longitude', axis='columns', inplace=True)
 data_bicycle_thefts.drop('Latitude', axis='columns', inplace=True)
@@ -139,27 +129,44 @@ data_bicycle_thefts['Status'] = [1 if status=='RECOVERED' else 0 for status in d
 # Checking if any null values exist in the cleaned data
 print("Total Number of missing values: ", data_bicycle_thefts.isna().sum().sum())
 
-# Feature Selection: List of features that are most important for predictions as visualized from PowerBi report
-features = ["Occurrence_DayOfWeek", "Occurrence_Hour", "Hood_ID", "Premises_Type", "Cost_of_Bike", "Status"]
-featureSelection_df = data_bicycle_thefts[features]
-
 # Store categorical values (column names) in an array
 categorical_values = []
-for col, col_type in featureSelection_df.dtypes.iteritems():
+for col, col_type in data_bicycle_thefts.dtypes.iteritems():
     if col_type == 'O':
         categorical_values.append(col)
 print(categorical_values)
 
+
+# Use Label Encoder to convert categorical values to numeric
+# Import label encoder 
+from sklearn import preprocessing
+# for each categorical column convert values to numeric
+label_encoder = preprocessing.LabelEncoder()
+for i in categorical_values:
+    print(i)
+    data_bicycle_thefts[i]= label_encoder.fit_transform(data_bicycle_thefts[i]) 
+
+#Generate dataframe with correlation coefficients between columns
+df_correlation = data_bicycle_thefts.corr()
+print(df_correlation)
+
+#Visualize correlation coefficients using the Seaborn library
+sb.heatmap(df_correlation);
+
+# Feature Selection: List of features that are most important for predictions as visualized in correlation chart
+features = ["Occurrence_Date", "Report_Date", "Hood_ID", "Premises_Type", "Cost_of_Bike", "Status"]
+featureSelection_df = data_bicycle_thefts[features]
+
 # Using get Dummies method to convert categorical (string) data to numerical
-df_ohe = pd.get_dummies(featureSelection_df, columns=categorical_values, dummy_na=False)
-print(df_ohe.head())
-print(df_ohe.columns.values)
-print(len(df_ohe) - df_ohe.count())
+# df_ohe = pd.get_dummies(featureSelection_df, columns=categorical_values, dummy_na=False)
+# print(df_ohe.head())
+# print(df_ohe.columns.values)
+# print(len(df_ohe) - df_ohe.count())
 
 # Normalization/Standardization of the values with greater range to have same range
 # from sklearn import preprocessing
 # Get column names first
-names = df_ohe.columns.difference(['Status'])
+names = featureSelection_df.columns.difference(['Status'])
 # Create the Scaler object
 # scaler = preprocessing.StandardScaler()
 # # Fit your data on the scaler object
@@ -171,16 +178,13 @@ names = df_ohe.columns.difference(['Status'])
 
 from sklearn.preprocessing import StandardScaler
 cols_to_norm = names
-scaled_df = df_ohe
-scaled_df[cols_to_norm] = StandardScaler().fit_transform(df_ohe[cols_to_norm])
+scaled_df = featureSelection_df
+scaled_df[cols_to_norm] = StandardScaler().fit_transform(featureSelection_df[cols_to_norm])
 
 
 ###################
-#### BALANCE the IMBALANCED data here or after splitting the data?????????????????????????????????????????????
-###############
-
-
-
+#### BALANCE the IMBALANCED data here before splitting the data for training and testing
+###################
 
 # Split the data into train test
 x = scaled_df[scaled_df.columns.difference(['Status'])]
@@ -190,7 +194,6 @@ y.value_counts()
 
 # Show pie plot (Approach 1)
 y.value_counts().plot.pie(autopct='%.2f')
-
 
 # Undersampling (only for testing, but will go with oversampling as that 
 # will have better accuracy as more records will be used to test)
@@ -221,12 +224,13 @@ _ = ax.set_title("Over-sampling")
 # Class distribution
 y_ros.value_counts()
 
-
-
-
+# Split data: 80% for training and 20% for testing
 from sklearn.model_selection import train_test_split
 trainX,testX,trainY,testY = train_test_split(x_ros,y_ros, test_size = 0.2)
 
+"""
+3-4 Predictive model building & Model scoring and evaluation
+"""
 ####################################################
 ########### 3. Predictive model building ###########
 ####################################################
@@ -256,6 +260,31 @@ print("Accuracy:",metrics.accuracy_score(testY, testY_predict))
 from sklearn.metrics import confusion_matrix
 print("Confusion matrix \n" , confusion_matrix(testY, testY_predict, labels=labels))
 
+#Use Seaborn heatmaps to print the confusion matrix in a more clear and fancy way
+import seaborn as sns
+import matplotlib.pyplot as plt
+cm = confusion_matrix(testY, testY_predict)
+ax= plt.subplot()
+sns.heatmap(cm, annot=True, ax = ax); #annot=True to annotate cells
+# labels, title and ticks
+ax.set_xlabel('Predicted labels');ax.set_ylabel('True labels');
+ax.set_title('Confusion Matrix');
+ax.xaxis.set_ticklabels([0, 1]); ax.yaxis.set_ticklabels([0, 1]);
+plt.show()
+
+# Plot ROC Curve for the Logistic Regression Model
+from sklearn.metrics import roc_curve, roc_auc_score
+false_positive_rate1, true_positive_rate1, threshold1 = roc_curve(testY, testY_predict)
+
+plt.subplots(1, figsize=(10,10))
+plt.title('Receiver Operating Characteristic - Logistic Regression Model')
+plt.plot(false_positive_rate1, true_positive_rate1)
+plt.plot([0, 1], ls="--")
+plt.plot([0, 0], [1, 0] , c=".7"), plt.plot([1, 1] , c=".7")
+plt.ylabel('True Positive Rate')
+plt.xlabel('False Positive Rate')
+plt.show()
+
 ########### DECISION TREE MODEL ###########
 # Build the decision tree using the training dataset. Use entropy as a method for splitting, 
 # and split only when reaching 20 matches.
@@ -277,8 +306,6 @@ print('Score: ', score)
 print("Accuracy:",metrics.accuracy_score(testY, predictions))
 
 #Use Seaborn heatmaps to print the confusion matrix in a more clear and fancy way
-import seaborn as sns
-import matplotlib.pyplot as plt
 cm = confusion_matrix(testY, predictions)
 ax= plt.subplot()
 sns.heatmap(cm, annot=True, ax = ax); #annot=True to annotate cells
@@ -288,7 +315,20 @@ ax.set_title('Confusion Matrix');
 ax.xaxis.set_ticklabels([0, 1]); ax.yaxis.set_ticklabels([0, 1]);
 plt.show()
 
+# Plot ROC Curve for the Decision Tree Model
+from sklearn.metrics import roc_curve, roc_auc_score
+false_positive_rate1, true_positive_rate1, threshold1 = roc_curve(testY, predictions)
 
+plt.subplots(1, figsize=(10,10))
+plt.title('Receiver Operating Characteristic - DecisionTree')
+plt.plot(false_positive_rate1, true_positive_rate1)
+plt.plot([0, 1], ls="--")
+plt.plot([0, 0], [1, 0] , c=".7"), plt.plot([1, 1] , c=".7")
+plt.ylabel('True Positive Rate')
+plt.xlabel('False Positive Rate')
+plt.show()
+
+# We select the Decision Tree Model as it has high accuracy than the Logistic Regression Model
 
 
 
