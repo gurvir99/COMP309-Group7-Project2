@@ -1,0 +1,9 @@
+// python "D:\OneDrive - Centennial College\Semester6\Data Warehousing\GroupProject2\COMP309-Group7-Project2\api_flask_group7.py"
+[
+    {"Occurrence_Hour": 1, "Hood_ID": 71, "Premises_Type": "Apartment", "Cost_of_Bike": 200},
+    {"Occurrence_Hour": 5, "Hood_ID": 75, "Premises_Type": "Commercial", "Cost_of_Bike": 800},
+    {"Occurrence_Hour": 10, "Hood_ID": 120, "Premises_Type": "Transit", "Cost_of_Bike": 500},
+    {"Occurrence_Hour": 15, "Hood_ID": 98, "Premises_Type": "Outside", "Cost_of_Bike": 1200},
+    {"Occurrence_Hour": 20, "Hood_ID": 105, "Premises_Type": "House", "Cost_of_Bike": 600},
+    {"Occurrence_Hour": 24, "Hood_ID": 77, "Premises_Type": "Other", "Cost_of_Bike": 4000}
+]

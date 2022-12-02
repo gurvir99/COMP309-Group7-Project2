@@ -10,6 +10,7 @@ import traceback
 import pandas as pd
 import joblib
 import sys
+from random import randint
 # API definition
 app = Flask(__name__)
 
@@ -17,8 +18,21 @@ app = Flask(__name__)
 def predict():
     if dt:
         try:
+            premises_dict = {'Apartment': 0, 'Commercial': 1, 'Educational': 2, 'House': 3, 'Other': 4, 'Outside': 5, 'Transit': 6}
+            
+            # data from request
             json_ = request.json
-            print(json_)
+            print("before: ", json_)
+            for i in json_:
+                i["Premises_Type"] = premises_dict[i["Premises_Type"]]
+            print("after: ", json_)
+            
+            # random data
+            # json_ = []
+            # for _ in range(400):
+            #     my_dict = { 'Occurrence_Hour': randint(0, 25), 'Hood_ID': randint(1, 141),'Premises_Type': randint(0, 7), 'Cost_of_Bike': randint(100, 4000), }
+            #     json_.append(my_dict)
+            
             query = pd.DataFrame(json_)
             query = query.reindex(columns=model_columns, fill_value=0)
             print(query)
