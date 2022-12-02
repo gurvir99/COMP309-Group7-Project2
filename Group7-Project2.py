@@ -256,9 +256,9 @@ cm = confusion_matrix(testY, testY_predict)
 ax= plt.subplot()
 sns.heatmap(cm, annot=True, ax = ax); #annot=True to annotate cells
 # labels, title and ticks
-ax.set_xlabel('Predicted labels');ax.set_ylabel('True labels');
-ax.set_title('Confusion Matrix');
-ax.xaxis.set_ticklabels([0, 1]); ax.yaxis.set_ticklabels([0, 1]);
+ax.set_xlabel('Predicted labels');ax.set_ylabel('True labels')
+ax.set_title('Confusion Matrix')
+ax.xaxis.set_ticklabels([0, 1]); ax.yaxis.set_ticklabels([0, 1])
 plt.show()
 
 # Plot ROC Curve for the Logistic Regression Model
@@ -299,9 +299,9 @@ cm = confusion_matrix(testY, predictions)
 ax= plt.subplot()
 sns.heatmap(cm, annot=True, ax = ax); #annot=True to annotate cells
 # labels, title and ticks
-ax.set_xlabel('Predicted labels');ax.set_ylabel('True labels');
-ax.set_title('Confusion Matrix');
-ax.xaxis.set_ticklabels([0, 1]); ax.yaxis.set_ticklabels([0, 1]);
+ax.set_xlabel('Predicted labels');ax.set_ylabel('True labels')
+ax.set_title('Confusion Matrix')
+ax.xaxis.set_ticklabels([0, 1]); ax.yaxis.set_ticklabels([0, 1])
 plt.show()
 
 # Plot ROC Curve for the Decision Tree Model
