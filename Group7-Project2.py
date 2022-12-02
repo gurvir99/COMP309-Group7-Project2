@@ -7,6 +7,9 @@ Group Project 2
 """
 1. Data Exploration
 """
+#######################################
+######### 1. Data Exploration #########
+#######################################
 
 #Import Libraries
 import pandas as pd
@@ -89,8 +92,8 @@ data_bicycle_thefts['Cost_of_Bike'].fillna(int(data_bicycle_thefts['Cost_of_Bike
 #Check no null values are present in any column after Imputation
 data_bicycle_thefts.isna().sum()
 
-#Download dataframe as csv
-data_bicycle_thefts.to_csv(r'C:\COMP309-Group7-Project2\Bicycle_Thefts_2.0.csv', index=False, header=True)
+#Download dataframe as csv for PowerBi
+#data_bicycle_thefts.to_csv(r'C:\COMP309-Group7-Project2\Bicycle_Thefts_2.0.csv', index=False, header=True)
 
 # Removing all rows where the status of the bike is UNKNOWN
 # as it will not be useful in the predictive analysis
@@ -112,11 +115,8 @@ data_bicycle_thefts.drop('Report_DayOfMonth', axis='columns', inplace=True)
 data_bicycle_thefts.drop('Report_DayOfYear', axis='columns', inplace=True)
 data_bicycle_thefts.drop('Report_Hour', axis='columns', inplace=True)
 data_bicycle_thefts.drop('Report_Year', axis='columns', inplace=True)
-data_bicycle_thefts.drop('Occurrence_Month', axis='columns', inplace=True)
-data_bicycle_thefts.drop('Occurrence_DayOfWeek', axis='columns', inplace=True)
 data_bicycle_thefts.drop('Occurrence_DayOfMonth', axis='columns', inplace=True)
 data_bicycle_thefts.drop('Occurrence_DayOfYear', axis='columns', inplace=True)
-data_bicycle_thefts.drop('Occurrence_Hour', axis='columns', inplace=True)
 data_bicycle_thefts.drop('Occurrence_Year', axis='columns', inplace=True)
 data_bicycle_thefts.drop('City', axis='columns', inplace=True)
 data_bicycle_thefts.drop('Longitude', axis='columns', inplace=True)
@@ -144,7 +144,7 @@ from sklearn import preprocessing
 label_encoder = preprocessing.LabelEncoder()
 for i in categorical_values:
     print(i)
-    data_bicycle_thefts[i]= label_encoder.fit_transform(data_bicycle_thefts[i]) 
+    data_bicycle_thefts[i]= label_encoder.fit_transform(data_bicycle_thefts[i])
 
 #Generate dataframe with correlation coefficients between columns
 df_correlation = data_bicycle_thefts.corr()
@@ -154,28 +154,13 @@ print(df_correlation)
 sb.heatmap(df_correlation);
 
 # Feature Selection: List of features that are most important for predictions as visualized in correlation chart
-features = ["Occurrence_Date", "Report_Date", "Hood_ID", "Premises_Type", "Cost_of_Bike", "Status"]
+features = ["Occurrence_Hour", "Occurrence_Date", "Report_Date", "Hood_ID", "Premises_Type", "Location_Type", "Cost_of_Bike", "Status"]
 featureSelection_df = data_bicycle_thefts[features]
 
-# Using get Dummies method to convert categorical (string) data to numerical
-# df_ohe = pd.get_dummies(featureSelection_df, columns=categorical_values, dummy_na=False)
-# print(df_ohe.head())
-# print(df_ohe.columns.values)
-# print(len(df_ohe) - df_ohe.count())
-
 # Normalization/Standardization of the values with greater range to have same range
-# from sklearn import preprocessing
-# Get column names first
+# Get column names without status
 names = featureSelection_df.columns.difference(['Status'])
-# Create the Scaler object
-# scaler = preprocessing.StandardScaler()
-# # Fit your data on the scaler object
-# scaled_df = scaler.fit_transform(df_ohe)
-# scaled_df = pd.DataFrame(scaled_df, columns=names)
-# print(scaled_df.head())
-# print(scaled_df.dtypes)
-# # scaled_df['Status'] = df_ohe['Status']
-
+# Normalize
 from sklearn.preprocessing import StandardScaler
 cols_to_norm = names
 scaled_df = featureSelection_df
@@ -329,6 +314,21 @@ plt.xlabel('False Positive Rate')
 plt.show()
 
 # We select the Decision Tree Model as it has high accuracy than the Logistic Regression Model
+"""
+5. Deploying Model
+Serializing (saving) the model as an object
+"""
+
+import joblib
+joblib.dump(dt_data, 'C:\COMP309-Group7-Project2\model_dt.pkl')
+print("Model dumped!")
+
+
+# Serializing and saving the model columns as an object
+model_columns = list(x.columns)
+print(model_columns)
+joblib.dump(model_columns, 'C:\COMP309-Group7-Project2\model_columns.pkl')
+print("Models columns dumped!")
 
 
 
