@@ -139,19 +139,16 @@ print(categorical_values)
 # Use Label Encoder to convert categorical values to numeric
 # Import label encoder 
 from sklearn import preprocessing
-# for each categorical column convert values to numeric
 label_encoder = preprocessing.LabelEncoder()
 
+# For each categorical column convert values to numeric and create dictionary to save values
 mapping_dict = {}
 for col in categorical_values:
     data_bicycle_thefts[col] = label_encoder.fit_transform(data_bicycle_thefts[col])
- 
     le_name_mapping = dict(zip(label_encoder.classes_,
                                label_encoder.transform(label_encoder.classes_)))
- 
     mapping_dict[col] = le_name_mapping
 print(mapping_dict)
-
 
 #Generate dataframe with correlation coefficients between columns
 df_correlation = data_bicycle_thefts.corr()
@@ -163,33 +160,6 @@ sb.heatmap(df_correlation);
 # Feature Selection: List of features that are most important for predictions as visualized in correlation chart
 features = ["Occurrence_Hour", "Hood_ID", "Premises_Type", "Cost_of_Bike", "Status"]
 featureSelection_df = data_bicycle_thefts[features]
-
-# Store categorical values (column names) in an array
-categorical_values = []
-for col, col_type in featureSelection_df.dtypes.iteritems():
-    if col_type == 'O':
-        categorical_values.append(col)
-print(categorical_values)
-
-# Use Label Encoder to convert categorical values to numeric
-# Import label encoder 
-from sklearn import preprocessing
-# for each categorical column convert values to numeric
-label_encoder = preprocessing.LabelEncoder()
-
-mapping_dict = {}
-for col in categorical_values:
-    featureSelection_df[col] = label_encoder.fit_transform(featureSelection_df[col])
- 
-    le_name_mapping = dict(zip(label_encoder.classes_,
-                               label_encoder.transform(label_encoder.classes_)))
- 
-    mapping_dict[col] = le_name_mapping
-print(mapping_dict)
-
-for i in categorical_values:
-    print(i)
-    featureSelection_df[i]= label_encoder.fit_transform(featureSelection_df[i])
 
 # Normalization/Standardization of the values with greater range to have same range
 # Get column names without status
@@ -356,7 +326,6 @@ Serializing (saving) the model as an object
 import joblib
 joblib.dump(dt_data, 'C:\COMP309-Group7-Project2\model_dt.pkl')
 print("Model dumped!")
-
 
 # Serializing and saving the model columns as an object
 model_columns = list(x.columns)
