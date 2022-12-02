@@ -10,7 +10,6 @@ import traceback
 import pandas as pd
 import joblib
 import sys
-from sklearn import preprocessing
 # API definition
 app = Flask(__name__)
 
@@ -20,23 +19,9 @@ def predict():
         try:
             json_ = request.json
             print(json_)
-            
-            categorical_values = []
-            for col, col_type in pd.DataFrame(json_).dtypes.iteritems():
-                if col_type == 'O':
-                    categorical_values.append(col)
-            print(categorical_values)
-            
-            # for each categorical column convert values to numeric
-            label_encoder = preprocessing.LabelEncoder()
-            for i in categorical_values:
-                print(i)
-                pd.DataFrame(json_)[i]= label_encoder.fit_transform(pd.DataFrame(json_)[i])
-            
-            print(json_)
             query = pd.DataFrame(json_)
             query = query.reindex(columns=model_columns, fill_value=0)
-            print("here",query)
+            print(query)
 
             from sklearn import preprocessing
             scaler = preprocessing.StandardScaler()

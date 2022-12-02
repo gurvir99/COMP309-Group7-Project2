@@ -129,23 +129,6 @@ data_bicycle_thefts['Status'] = [1 if status=='RECOVERED' else 0 for status in d
 # Checking if any null values exist in the cleaned data
 print("Total Number of missing values: ", data_bicycle_thefts.isna().sum().sum())
 
-# Store categorical values (column names) in an array
-categorical_values = []
-for col, col_type in data_bicycle_thefts.dtypes.iteritems():
-    if col_type == 'O':
-        categorical_values.append(col)
-print(categorical_values)
-
-
-# Use Label Encoder to convert categorical values to numeric
-# Import label encoder 
-from sklearn import preprocessing
-# for each categorical column convert values to numeric
-label_encoder = preprocessing.LabelEncoder()
-for i in categorical_values:
-    print(i)
-    data_bicycle_thefts[i]= label_encoder.fit_transform(data_bicycle_thefts[i])
-
 #Generate dataframe with correlation coefficients between columns
 df_correlation = data_bicycle_thefts.corr()
 print(df_correlation)
@@ -154,8 +137,35 @@ print(df_correlation)
 sb.heatmap(df_correlation);
 
 # Feature Selection: List of features that are most important for predictions as visualized in correlation chart
-features = ["Occurrence_Hour", "Occurrence_Date", "Report_Date", "Hood_ID", "Premises_Type", "Location_Type", "Cost_of_Bike", "Status"]
+features = ["Occurrence_Hour", "Hood_ID", "Premises_Type", "Cost_of_Bike", "Status"]
 featureSelection_df = data_bicycle_thefts[features]
+
+# Store categorical values (column names) in an array
+categorical_values = []
+for col, col_type in featureSelection_df.dtypes.iteritems():
+    if col_type == 'O':
+        categorical_values.append(col)
+print(categorical_values)
+
+# Use Label Encoder to convert categorical values to numeric
+# Import label encoder 
+from sklearn import preprocessing
+# for each categorical column convert values to numeric
+label_encoder = preprocessing.LabelEncoder()
+
+mapping_dict = {}
+for col in categorical_values:
+    featureSelection_df[col] = label_encoder.fit_transform(featureSelection_df[col])
+ 
+    le_name_mapping = dict(zip(label_encoder.classes_,
+                               label_encoder.transform(label_encoder.classes_)))
+ 
+    mapping_dict[col] = le_name_mapping
+print(mapping_dict)
+
+for i in categorical_values:
+    print(i)
+    featureSelection_df[i]= label_encoder.fit_transform(featureSelection_df[i])
 
 # Normalization/Standardization of the values with greater range to have same range
 # Get column names without status
